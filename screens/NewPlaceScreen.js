@@ -1,4 +1,4 @@
-import React, {useState} from 'react'
+import React, {useState, useCallback} from 'react'
 import { ScrollView, View, Button, Text, TextInput, StyleSheet } from 'react-native'
 import {useDispatch} from 'react-redux'
 
@@ -10,6 +10,7 @@ import LocationPicker from '../components/LocationPicker'
 const NewPlaceScreen = props => {
     const [titleValue, setTitleValue] = useState('')
     const [selectedImage, setSelectedImage] = useState()
+    const [selectedLocation, setSelectedLocation] = useState()
 
     const dispatch = useDispatch()
 
@@ -20,9 +21,17 @@ const NewPlaceScreen = props => {
     const imageTakenHandler = imagePath => {
         setSelectedImage(imagePath)
     }
+    
+    // useCallback is used here to enforce that the method
+    // is not created on each render cycle, which would
+    // cause the function in LocationPicker that has it as a
+    // dependency to be recreated
+    const locationPickedHandler = useCallback(location => {
+        setSelectedLocation(location)
+    }, [])
 
     const savePlaceHandler = () => {
-        dispatch(placesActions.addPlace(titleValue, selectedImage))
+        dispatch(placesActions.addPlace(titleValue, selectedImage, selectedLocation))
         props.navigation.goBack()
     }
 
@@ -32,7 +41,7 @@ const NewPlaceScreen = props => {
             <Text style={styles.label}>Title</Text>
             <TextInput style={styles.textInput} onChangeText={titleChangeHandler} value={titleValue}/>
             <ImagePicker onImageTaken={imageTakenHandler}/>
-            <LocationPicker navigation={props.navigation}/>
+            <LocationPicker navigation={props.navigation} onLocationPicked={locationPickedHandler}/>
             <Button title="Save Place" color={Colors.primary} onPress={savePlaceHandler}/>
         </View>
     </ScrollView>

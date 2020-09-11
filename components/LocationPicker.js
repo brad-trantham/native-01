@@ -12,10 +12,15 @@ const LocationPicker = props => {
 
     const mapPickedLocation = props.navigation.getParam('pickedLocation')
 
+    // destructured here to avoid having props as a dependency
+    const { onLocationPicked } = props
+
     useEffect(()=>{
-        if(mapPickedLocation)
+        if(mapPickedLocation) {
             setPickedLocation(mapPickedLocation)
-    }, [mapPickedLocation])
+            props.onLocationPicked(mapPickedLocation)
+        }
+    }, [mapPickedLocation, onLocationPicked])
 
     const verifyPermissions = async () => {
         const result = await Permissions.askAsync(Permissions.LOCATION)
@@ -38,6 +43,10 @@ const LocationPicker = props => {
             const location = await Location.getCurrentPositionAsync({timeout: 5000, accuracy: Location.Accuracy.High})
             console.log(location)
             setPickedLocation({
+                lat: location.coords.latitude,
+                lng: location.coords.longitude
+            })
+            props.onLocationPicked({
                 lat: location.coords.latitude,
                 lng: location.coords.longitude
             })
